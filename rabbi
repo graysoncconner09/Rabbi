@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Official Rabbinical Ordination Center</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        header {
+            background-color: #004080;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        h1 {
+            margin: 0;
+        }
+        #start-button {
+            background-color: #ffd700;
+            color: #004080;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        #chat-container {
+            display: none;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 10px;
+            height: 400px;
+            overflow-y: auto;
+        }
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .system {
+            text-align: center;
+            color: gray;
+        }
+        .rabbi {
+            background-color: #e0f7fa;
+            text-align: left;
+        }
+        .user {
+            background-color: #c8e6c9;
+            text-align: right;
+        }
+        #input-container {
+            display: none;
+            max-width: 600px;
+            margin: 10px auto;
+        }
+        #user-input {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+        }
+        #send-button {
+            padding: 10px 20px;
+            background-color: #004080;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #certificate-container {
+            display: none;
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        #download-button {
+            background-color: #ffd700;
+            color: #004080;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Official Rabbinical Ordination Center</h1>
+        <p>Become a Certified Rabbi in Minutes!</p>
+    </header>
+    <button id="start-button">Become a Rabbi</button>
+    
+    <div id="chat-container"></div>
+    <div id="input-container">
+        <input type="text" id="user-input" placeholder="Type your message...">
+        <button id="send-button">Send</button>
+    </div>
+    
+    <div id="certificate-container">
+        <h2>Congratulations!</h2>
+        <p>You are now officially a Rabbi.</p>
+        <button id="download-button">Download Your Certificate</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        const { jsPDF } = window.jspdf;
+        
+        const rabbis = [
+            { name: "Rabbi Goldstein" },
+            { name: "Rabbi Silverman" },
+            { name: "Rabbi Cohenberg" }
+        ];
+        
+        const questions = [
+            "What's the Jewish word for 'hello' and 'peace'? (Hint: It starts with 'Sh' and ends with 'alom')",
+            "How many days does Hanukkah last? (Hint: It's the same as the number of nights)",
+            "What do Jews traditionally eat on Passover? (Hint: It's flat and crunchy)"
+        ];
+        
+        let userName = "";
+        let stage = 0; // 0: initial message, 1: name, 2-4: questions, 5: ordination
+        
+        const chatContainer = document.getElementById('chat-container');
+        const inputContainer = document.getElementById('input-container');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const startButton = document.getElementById('start-button');
+        const certificateContainer = document.getElementById('certificate-container');
+        const downloadButton = document.getElementById('download-button');
+        
+        function appendMessage(text, className) {
+            const msg = document.createElement('div');
+            msg.classList.add('message', className);
+            msg.textContent = text;
+            chatContainer.appendChild(msg);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        function simulateJoin() {
+            appendMessage("Starting Rabbinical Ordination Chat...", 'system');
+            setTimeout(() => {
+                rabbis.forEach((rabbi, index) => {
+                    setTimeout(() => {
+                        appendMessage(`${rabbi.name} has joined the chat.`, 'system');
+                    }, index * 1000);
+                });
+                setTimeout(initiateChat, 3000);
+            }, 1000);
+        }
+        
+        function initiateChat() {
+            appendMessage(`${rabbis[0].name}: Shalom! We're here to ordain you as a Rabbi.`, 'rabbi');
+            userInput.value = "I want to become a rabbi";
+            stage = 0;
+            inputContainer.style.display = 'block';
+            userInput.focus();
+        }
+        
+        function handleUserMessage(message) {
+            appendMessage(`You: ${message}`, 'user');
+            userInput.value = "";
+            if (stage === 0) {
+                setTimeout(() => {
+                    appendMessage(`${rabbis[0].name}: Wonderful! What is your name?`, 'rabbi');
+                    stage = 1;
+                }, 1000);
+            } else if (stage === 1) {
+                userName = message;
+                setTimeout(() => {
+                    appendMessage(`${rabbis[1].name}: Great to meet you, ${userName}! Now, a few easy questions to confirm.`, 'rabbi');
+                    setTimeout(askQuestion, 1000);
+                }, 1000);
+            } else if (stage >= 2 && stage <= 4) {
+                setTimeout(() => {
+                    appendMessage(`${rabbis[stage - 2].name}: Correct! Well done.`, 'rabbi');
+                    if (stage < 4) {
+                        setTimeout(askQuestion, 1000);
+                    } else {
+                        setTimeout(ordain, 1000);
+                    }
+                }, 1000);
+            }
+        }
+        
+        function askQuestion() {
+            const qIndex = stage - 2;
+            appendMessage(`${rabbis[qIndex].name}: Question ${qIndex + 1}: ${questions[qIndex]}`, 'rabbi');
+            stage++;
+        }
+        
+        function ordain() {
+            stage = 5;
+            rabbis.forEach((rabbi, index) => {
+                setTimeout(() => {
+                    appendMessage(`${rabbi.name}: I now pronounce ${userName} a Rabbi! Mazel tov!`, 'rabbi');
+                }, index * 1000);
+            });
+            setTimeout(() => {
+                inputContainer.style.display = 'none';
+                certificateContainer.style.display = 'block';
+            }, 3000);
+        }
+        
+        function downloadCertificate() {
+            const doc = new jsPDF();
+            doc.setFontSize(22);
+            doc.text("Certificate of Rabbinical Ordination", 105, 40, { align: 'center' });
+            doc.setFontSize(16);
+            doc.text(`This certifies that ${userName}`, 105, 80, { align: 'center' });
+            doc.text("has been ordained as a Rabbi", 105, 95, { align: 'center' });
+            doc.text("by the Official Rabbinical Ordination Center.", 105, 110, { align: 'center' });
+            doc.setFontSize(12);
+            doc.text("Signed:", 105, 140, { align: 'center' });
+            rabbis.forEach((rabbi, index) => {
+                doc.text(rabbi.name, 105, 150 + index * 10, { align: 'center' });
+            });
+            doc.save(`${userName}_Rabbi_Certificate.pdf`);
+        }
+        
+        startButton.addEventListener('click', () => {
+            startButton.style.display = 'none';
+            chatContainer.style.display = 'block';
+            simulateJoin();
+        });
+        
+        sendButton.addEventListener('click', () => {
+            const message = userInput.value.trim();
+            if (message && stage < 5) {
+                handleUserMessage(message);
+            }
+        });
+        
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendButton.click();
+            }
+        });
+        
+        downloadButton.addEventListener('click', downloadCertificate);
+    </script>
+</body>
+</html>
